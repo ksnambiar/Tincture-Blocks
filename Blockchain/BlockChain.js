@@ -1,3 +1,5 @@
+const sha256 = require('sha256');
+const uuid = require('uuid/v1');
 class BlockChain {
   constructor(){
     this.chain = [];
@@ -29,7 +31,7 @@ getLastBlock = function() {
 	return this.chain[this.chain.length - 1];
 };
 
-createNewTransaction = function(amount, sender, recipient) {
+createNewsValueTransaction = function(amount, sender, recipient) {
 	const newTransaction = {
 		amount: amount,
 		sender: sender,
@@ -39,13 +41,19 @@ createNewTransaction = function(amount, sender, recipient) {
 
 	return newTransaction;
 };
-
+createNewDataTranasction = function(owner,data){
+  const newTransaction={
+    owner: owner,
+    data: data,
+    transactionId: uuid().split('-').join('')
+  }
+  return newTransaction
+}
 
 addTransactionToPendingTransactions = function(transactionObj) {
 	this.pendingTransactions.push(transactionObj);
 	return this.getLastBlock()['index'] + 1;
 };
-
 
 
 hashBlock = function(previousBlockHash, currentBlockData, nonce) {
