@@ -3,6 +3,7 @@ let app = express();
 let uuid = require("uuid/v1");
 const rp = require('request-promise');
 const {tincture} = require("../inits/init");
+const {manager} = require("./stateHandler");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -11,7 +12,15 @@ app.get("/",(req,res)=>{
   res.status(200).json({message:"start interface"});
 })
 
-//
+app.post("state",(req,res)=>{
+	let result=manager(req.body)
+	if(result===0){
+		res.status(400).json({message:"some error"});
+	}else{
+		res.status(200).json({data:result})
+	}
+})
+
 app.get("/blockchain",(req,res)=>{
   res.status(200).json({data:tincture.chain})
 })
