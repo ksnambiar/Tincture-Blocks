@@ -1,5 +1,6 @@
 const sha256 = require('sha256');
 const uuid = require('uuid/v1');
+
 class BlockChain {
   constructor(){
     this.chain = [];
@@ -41,11 +42,10 @@ createNewValueTransaction = function(amount, sender, recipient) {
 
 	return newTransaction;
 };
-createNewDataTranasction = function(owner,data,action){
+createNewDataTranasction = function(owner,data){
   const newTransaction={
     owner: owner,
     data: data,
-    action:action,
     transactionId: uuid().split('-').join('')
   }
   return newTransaction
@@ -151,5 +151,5 @@ getAddressData = function(address) {
 	};
 
 }
-
+}
 module.exports = {BlockChain}

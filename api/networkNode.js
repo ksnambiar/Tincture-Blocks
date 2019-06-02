@@ -1,11 +1,8 @@
 let express = require("express");
 let app = express();
 let uuid = require("uuid/v1");
-let {BlockChain} = require("../Blockchain/BlockChain");
 const rp = require('request-promise');
-
-let tincture=new BlockChain()
-
+const {tincture} = require("../inits/init");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
