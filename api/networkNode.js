@@ -182,6 +182,96 @@ app.post('/register-and-broadcast-node', function(req, res) {
 	});
 });
 
+// register a node with the network
+app.post('/register-node', function(req, res) {
+	const newNodeUrl = req.body.newNodeUrl;
+	const nodeNotAlreadyPresent =tincture.networkNodes.indexOf(newNodeUrl) == -1;
+	const notCurrentNode =tincture.currentNodeUrl !== newNodeUrl;
+	if (nodeNotAlreadyPresent && notCurrentNode)tincture.networkNodes.push(newNodeUrl);
+	res.json({ note: 'New node registered successfully.' });
+});
+
+
+// register multiple nodes at once
+app.post('/register-nodes-bulk', function(req, res) {
+	const allNetworkNodes = req.body.allNetworkNodes;
+	allNetworkNodes.forEach(networkNodeUrl => {
+		const nodeNotAlreadyPresent =tincture.networkNodes.indexOf(networkNodeUrl) == -1;
+		const notCurrentNode =tincture.currentNodeUrl !== networkNodeUrl;
+		if (nodeNotAlreadyPresent && notCurrentNode)tincture.networkNodes.push(networkNodeUrl);
+	});
+
+	res.json({ note: 'Bulk registration successful.' });
+});
+
+
+// consensus
+app.get('/consensus', function(req, res) {
+	const requestPromises = [];
+	tincture.networkNodes.forEach(networkNodeUrl => {
+		const requestOptions = {
+			uri: networkNodeUrl + '/blockchain',
+			method: 'GET',
+			json: true
+		};
+
+		requestPromises.push(rp(requestOptions));
+	});
+
+	Promise.all(requestPromises)
+	.then(blockchains => {
+		const currentChainLength =tincture.chain.length;
+		let maxChainLength = currentChainLength;
+		let newLongestChain = null;
+		let newPendingTransactions = null;
+
+		blockchains.forEach(blockchain => {
+			if (blockchain.chain.length > maxChainLength) {
+				maxChainLength = blockchain.chain.length;
+				newLongestChain = blockchain.chain;
+				newPendingTransactions = blockchain.pendingTransactions;
+			};
+		});
+
+
+		if (!newLongestChain || (newLongestChain && !tincture.chainIsValid(newLongestChain))) {
+			res.json({
+				note: 'Current chain has not been replaced.',
+				chain:tincture.chain
+			});
+		}
+		else {
+			tincture.chain = newLongestChain;
+			tincture.pendingTransactions = newPendingTransactions;
+			res.json({
+				note: 'This chain has been replaced.',
+				chain:tincture.chain
+			});
+		}
+	});
+});
+
+
+// get block by blockHash
+app.get('/block/:blockHash', function(req, res) {
+	const blockHash = req.params.blockHash;
+	const correctBlock = tincture.getBlock(blockHash);
+	res.json({
+		block: correctBlock
+	});
+});
+
+
+// get transaction by transactionId
+app.get('/transaction/:transactionId', function(req, res) {
+	const transactionId = req.params.transactionId;
+	const trasactionData = tincture.getTransaction(transactionId);
+	res.json({
+		transaction: trasactionData.transaction,
+		block: trasactionData.block
+	});
+});
+
 
 
 
