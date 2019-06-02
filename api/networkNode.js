@@ -32,13 +32,13 @@ app.post('/dataTransaction',function(req,res){
   const blockIndex = tincture.addTransactionToPendingTransactions(newTransaction)
 })
 //value transaction broadcast
-app.post('/transaction/broadcast', function(req, res) {
+app.post('/valueTransaction/broadcast', function(req, res) {
 	const newTransaction = tincture.createNewTransaction(req.body.amount, req.body.sender, req.body.recipient);
 	tincture.addTransactionToPendingTransactions(newTransaction);
 	const requestPromises = [];
 	tincture.networkNodes.forEach(networkNodeUrl => {
 		const requestOptions = {
-			uri: networkNodeUrl + '/transaction',
+			uri: networkNodeUrl + '/valueTransaction',
 			method: 'POST',
 			body: newTransaction,
 			json: true
@@ -54,13 +54,13 @@ app.post('/transaction/broadcast', function(req, res) {
 });
 
 //data storge transaction broadcast
-app.post('/transaction/broadcast', function(req, res) {
+app.post('/dataTransaction/broadcast', function(req, res) {
 	const newTransaction = tincture.createNewTransaction(req.body.amount, req.body.sender, req.body.recipient);
 	tincture.addTransactionToPendingTransactions(newTransaction);
 	const requestPromises = [];
 	tincture.networkNodes.forEach(networkNodeUrl => {
 		const requestOptions = {
-			uri: networkNodeUrl + '/transaction',
+			uri: networkNodeUrl + '/dataTransaction',
 			method: 'POST',
 			body: newTransaction,
 			json: true
@@ -121,6 +121,67 @@ app.get('/mine', function(req, res) {
 		});
 	});
 });
+
+//
+//broadcast endpoints
+//
+
+// receive new block
+app.post('/receive-new-block', function(req, res) {
+	const newBlock = req.body.newBlock;
+	const lastBlock = tincture.getLastBlock();
+	const correctHash = lastBlock.hash === newBlock.previousBlockHash;
+	const correctIndex = lastBlock['index'] + 1 === newBlock['index'];
+
+	if (correctHash && correctIndex) {
+		tincture.chain.push(newBlock);
+		tincture.pendingTransactions = [];
+		res.json({
+			note: 'New block received and accepted.',
+			newBlock: newBlock
+		});
+	} else {
+		res.json({
+			note: 'New block rejected.',
+			newBlock: newBlock
+		});
+	}
+});
+
+
+// register a node and broadcast it to the network
+app.post('/register-and-broadcast-node', function(req, res) {
+	const newNodeUrl = req.body.newNodeUrl;
+	if (tincture.networkNodes.indexOf(newNodeUrl) == -1) tincture.networkNodes.push(newNodeUrl);
+
+	const regNodesPromises = [];
+	tincture.networkNodes.forEach(networkNodeUrl => {
+		const requestOptions = {
+			uri: networkNodeUrl + '/register-node',
+			method: 'POST',
+			body: { newNodeUrl: newNodeUrl },
+			json: true
+		};
+
+		regNodesPromises.push(rp(requestOptions));
+	});
+
+	Promise.all(regNodesPromises)
+	.then(data => {
+		const bulkRegisterOptions = {
+			uri: newNodeUrl + '/register-nodes-bulk',
+			method: 'POST',
+			body: { allNetworkNodes: [ ...tincture.networkNodes, tincture.currentNodeUrl ] },
+			json: true
+		};
+
+		return rp(bulkRegisterOptions);
+	})
+	.then(data => {
+		res.json({ note: 'New node registered with network successfully.' });
+	});
+});
+
 
 
 
