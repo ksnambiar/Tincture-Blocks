@@ -31,7 +31,7 @@ getLastBlock = function() {
 	return this.chain[this.chain.length - 1];
 };
 
-createNewsValueTransaction = function(amount, sender, recipient) {
+createNewValueTransaction = function(amount, sender, recipient) {
 	const newTransaction = {
 		amount: amount,
 		sender: sender,
@@ -41,10 +41,11 @@ createNewsValueTransaction = function(amount, sender, recipient) {
 
 	return newTransaction;
 };
-createNewDataTranasction = function(owner,data){
+createNewDataTranasction = function(owner,data,action){
   const newTransaction={
     owner: owner,
     data: data,
+    action:action,
     transactionId: uuid().split('-').join('')
   }
   return newTransaction
