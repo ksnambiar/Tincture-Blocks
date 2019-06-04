@@ -1,6 +1,6 @@
 const sha256 = require('sha256');
 const uuid = require('uuid/v1');
-
+const currentNodeUrl=process.argv[3];
 class BlockChain {
   constructor(){
     this.chain = [];
@@ -28,11 +28,11 @@ class BlockChain {
 	return newBlock;
   }
 
-getLastBlock = function() {
+getLastBlock() {
 	return this.chain[this.chain.length - 1];
 };
 
-createNewValueTransaction = function(amount, sender, recipient) {
+createNewValueTransaction(amount, sender, recipient) {
 	const newTransaction = {
 		amount: amount,
 		sender: sender,
@@ -42,7 +42,7 @@ createNewValueTransaction = function(amount, sender, recipient) {
 
 	return newTransaction;
 };
-createNewDataTranasction = function(owner,data){
+createNewDataTranasction(owner,data){
   const newTransaction={
     owner: owner,
     data: data,
@@ -51,20 +51,20 @@ createNewDataTranasction = function(owner,data){
   return newTransaction
 }
 
-addTransactionToPendingTransactions = function(transactionObj) {
+addTransactionToPendingTransactions(transactionObj) {
 	this.pendingTransactions.push(transactionObj);
 	return this.getLastBlock()['index'] + 1;
 };
 
 
-hashBlock = function(previousBlockHash, currentBlockData, nonce) {
+hashBlock(previousBlockHash, currentBlockData, nonce) {
 	const dataAsString = previousBlockHash + nonce.toString() + JSON.stringify(currentBlockData);
 	const hash = sha256(dataAsString);
 	return hash;
 };
 
 
-proofOfWork = function(previousBlockHash, currentBlockData) {
+proofOfWork(previousBlockHash, currentBlockData) {
 	let nonce = 0;
 	let hash = this.hashBlock(previousBlockHash, currentBlockData, nonce);
 	while (hash.substring(0, 4) !== '0000') {
@@ -77,7 +77,7 @@ proofOfWork = function(previousBlockHash, currentBlockData) {
 
 
 
-chainIsValid = function(blockchain) {
+chainIsValid(blockchain) {
 	let validChain = true;
 
 	for (var i = 1; i < blockchain.length; i++) {
@@ -100,7 +100,7 @@ chainIsValid = function(blockchain) {
 };
 
 
-getBlock = function(blockHash) {
+getBlock(blockHash) {
 	let correctBlock = null;
 	this.chain.forEach(block => {
 		if (block.hash === blockHash) correctBlock = block;
@@ -109,7 +109,7 @@ getBlock = function(blockHash) {
 };
 
 
-getTransaction = function(transactionId) {
+getTransaction(transactionId) {
 	let correctTransaction = null;
 	let correctBlock = null;
 
@@ -129,7 +129,7 @@ getTransaction = function(transactionId) {
 };
 
 
-getAddressData = function(address) {
+getAddressData(address) {
 	const addressTransactions = [];
 	this.chain.forEach(block => {
 		block.transactions.forEach(transaction => {

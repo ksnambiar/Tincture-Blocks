@@ -4,7 +4,9 @@ let uuid = require("uuid/v1");
 const rp = require('request-promise');
 const {tincture} = require("../inits/init");
 const {manager} = require("./stateHandler");
-
+const bodyParser = require("body-parser")
+const port1 = process.argv[2];
+const nodeAddress = uuid().split('-').join('')
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -12,7 +14,7 @@ app.get("/",(req,res)=>{
   res.status(200).json({message:"start interface"});
 })
 
-app.post("state",(req,res)=>{
+app.post("/state",(req,res)=>{
 	let result=manager(req.body)
 	if(result===0){
 		res.status(400).json({message:"some error"});
@@ -37,9 +39,10 @@ app.post('/dataTransaction',function(req,res){
   const newTransaction = req.body;
   const blockIndex = tincture.addTransactionToPendingTransactions(newTransaction)
 })
+
 //value transaction broadcast
 app.post('/valueTransaction/broadcast', function(req, res) {
-	const newTransaction = tincture.createNewTransaction(req.body.amount, req.body.sender, req.body.recipient);
+	const newTransaction = tincture.createNewValueTransaction(req.body.amount, req.body.sender, req.body.recipient);
 	tincture.addTransactionToPendingTransactions(newTransaction);
 	const requestPromises = [];
 	tincture.networkNodes.forEach(networkNodeUrl => {
@@ -59,9 +62,9 @@ app.post('/valueTransaction/broadcast', function(req, res) {
 	});
 });
 
-//data storge transaction broadcast
+//data storge transaction broadcast-[]
 app.post('/dataTransaction/broadcast', function(req, res) {
-	const newTransaction = tincture.createNewTransaction(req.body.amount, req.body.sender, req.body.recipient);
+	const newTransaction = tincture.createNewDataTransaction(req.body.amount, req.body.sender, req.body.recipient);
 	tincture.addTransactionToPendingTransactions(newTransaction);
 	const requestPromises = [];
 	tincture.networkNodes.forEach(networkNodeUrl => {
@@ -98,7 +101,7 @@ app.get('/mine', function(req, res) {
 		const requestOptions = {
 			uri: networkNodeUrl + '/receive-new-block',
 			method: 'POST',
-			body: { newBlock: newBlock },
+			body:  { newBlock: newBlock },
 			json: true
 		};
 
@@ -108,7 +111,7 @@ app.get('/mine', function(req, res) {
 	Promise.all(requestPromises)
 	.then(data => {
 		const requestOptions = {
-			uri: tincture.currentNodeUrl + '/transaction/broadcast',
+			uri: tincture.currentNodeUrl + '/valueTransaction/broadcast',
 			method: 'POST',
 			body: {
 				amount: 12.5,
@@ -117,7 +120,6 @@ app.get('/mine', function(req, res) {
 			},
 			json: true
 		};
-
 		return rp(requestOptions);
 	})
 	.then(data => {
@@ -168,7 +170,6 @@ app.post('/register-and-broadcast-node', function(req, res) {
 			body: { newNodeUrl: newNodeUrl },
 			json: true
 		};
-
 		regNodesPromises.push(rp(requestOptions));
 	});
 
@@ -267,6 +268,9 @@ app.get('/block/:blockHash', function(req, res) {
 	});
 });
 
+app.get('/transaction/listPending',(req,res)=>{
+	res.status(200).json({data:tincture.pendingTransactions});
+})
 
 // get transaction by transactionId
 app.get('/transaction/:transactionId', function(req, res) {
@@ -282,7 +286,7 @@ app.get('/transaction/:transactionId', function(req, res) {
 
 
 
-let port = process.env.PORT|3000
-app.listen(port,()=>{
-  console.log(`listening on ${port}`);
+// let port1 = process.env.PORT|3000
+app.listen(port1,()=>{
+  console.log(`listening on ${port1}`);
 })

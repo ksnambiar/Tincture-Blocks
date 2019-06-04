@@ -3,13 +3,13 @@ const {tincture} = require("../inits/init");
 class state{
   constructor(){
     this.data={
-      songs=[]
+      songs:[]
     }
   }
-  addSong =function(songData){
+  addSong(songData){
     this.data.songs.push(songData)
   }
-  getSongByName=function(name){
+  getSongByName(name){
     this.data.songs.forEach(obj=>{
       if(obj.name===name){
         return obj
@@ -17,7 +17,7 @@ class state{
     })
     return 0
   }
-  getSongById = function(id){
+  getSongById(id){
     this.data.songs.forEach(obj=>{
       if(obj.id===id){
         return obj
@@ -25,7 +25,7 @@ class state{
     })
     return 0;
   }
-  getSongs = function(){
+  getSongs(){
     return this.data.songs;
   }
 }

@@ -6,6 +6,8 @@ const {tinctureState,tincture} = require("../inits/init");
 const manager = (message)=>{
     let payload=message.payload
     let transaction=tincture.createNewDataTranasction(payload.userName,payload)
+    transaction.type=message.type
+    tincture.addTransactionToPendingTransactions(transaction)
     switch(message.type){
         case 'addSong':
             tinctureState.addSong(payload)
