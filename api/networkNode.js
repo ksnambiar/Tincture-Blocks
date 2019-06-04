@@ -9,7 +9,7 @@ const fs = require("fs");
 const {checkExistence,addChainData,reloadChainData,addPersistanceInBetween} = require("../Blockchain/blockdata");
 const {addStatePersistance,reloadData,stateExistence} = require("../Blockchain/blockstate");
 let nodeAddress;
-const port1 = process.argv[2];
+const port1 = process.env.PORT|3001;
 // node address persistance
 fs.readFile(__dirname+"/node_address.json",(err,data)=>{
 	if(err){
