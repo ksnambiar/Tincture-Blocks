@@ -95,4 +95,4 @@ function checkExistence(){
     })
 }
 
-module.exports={addChainData,getChainData,addDataToChain,reloadChainData,getBlocksCount,checkExistence}
+module.exports={addPersistanceInBetween,addChainData,getChainData,addDataToChain,reloadChainData,getBlocksCount,checkExistence}

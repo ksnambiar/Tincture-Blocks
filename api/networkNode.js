@@ -6,7 +6,7 @@ const {tincture,tinctureState} = require("../inits/init");
 const {manager} = require("./stateHandler");
 const bodyParser = require("body-parser");
 const fs = require("fs");
-const {checkExistence,addChainData,reloadChainData} = require("../Blockchain/blockdata");
+const {checkExistence,addChainData,reloadChainData,addPersistanceInBetween} = require("../Blockchain/blockdata");
 const {addStatePersistance,reloadData,stateExistence} = require("../Blockchain/blockstate");
 let nodeAddress;
 const port1 = process.argv[2];
@@ -68,6 +68,10 @@ app.post("/state",(req,res)=>{
 		res.status(200).json({data:result})
 	}
 })
+//////
+// endpoints start from here
+/////
+
 
 app.get("/blockchain",(req,res)=>{
   res.status(200).json({data:tincture.chain})
@@ -170,8 +174,9 @@ app.get('/mine', function(req, res) {
 		return rp(requestOptions);
 	})
 	.then(data => {
-		
+
 		addStatePersistance(JSON.stringify(tinctureState.data.songs));
+		addPersistanceInBetween(tincture.chain)
 		res.json({
 			note: "New block mined & broadcast successfully",
 			block: newBlock
