@@ -2,11 +2,12 @@ let express = require("express");
 let app = express();
 let uuid = require("uuid/v1");
 const rp = require('request-promise');
-const {tincture} = require("../inits/init");
+const {tincture,tinctureState} = require("../inits/init");
 const {manager} = require("./stateHandler");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const {checkExistence,addChainData,reloadChainData} = require("../Blockchain/blockdata");
+const {addStatePersistance,reloadData,stateExistence} = require("../Blockchain/blockstate");
 let nodeAddress;
 const port1 = process.argv[2];
 // node address persistance
@@ -40,7 +41,11 @@ checkExistence().then(obj=>{
 })
 
 //blockchain state persistance
-
+stateExistence().then(obj=>{
+	reloadData().then(obj=>{
+		tinctureState.reloadState(obj)
+	})
+})
 
 
 app.use(bodyParser.json());

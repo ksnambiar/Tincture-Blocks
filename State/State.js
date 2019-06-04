@@ -9,6 +9,9 @@ class state{
   addSong(songData){
     this.data.songs.push(songData)
   }
+  reloadState(state){
+    this.data.songs=state
+  }
   getSongByName(name){
     this.data.songs.forEach(obj=>{
       if(obj.name===name){
@@ -25,6 +28,7 @@ class state{
     })
     return 0;
   }
+
   getSongs(){
     return this.data.songs;
   }
