@@ -4,9 +4,24 @@ let uuid = require("uuid/v1");
 const rp = require('request-promise');
 const {tincture} = require("../inits/init");
 const {manager} = require("./stateHandler");
-const bodyParser = require("body-parser")
+const bodyParser = require("body-parser");
+const fs = require("fs");
+let nodeAddress;
 const port1 = process.argv[2];
-const nodeAddress = uuid().split('-').join('')
+fs.readFile(__dirname+"/node_address.json",(err,data)=>{
+	if(err){
+		nodeAddress = uuid().split('-').join('')
+		console.log("no file found so creating it....")
+		fs.writeFileSync(__dirname+"/node_address.json",JSON.stringify({pubadd:nodeAddress}))
+		console.log(`pid -- ${nodeAddress}`);
+	}else{
+		let parserData = JSON.parse(data);
+		console.log("file already exists taking pid")
+		nodeAddress=parserData.pubadd
+		console.log(`pid is --- ${nodeAddress}`);
+	}
+})
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -61,6 +76,7 @@ app.post('/valueTransaction/broadcast', function(req, res) {
 		res.json({ note: 'Transaction created and broadcast successfully.' });
 	});
 });
+
 
 //data storge transaction broadcast-[]
 app.post('/dataTransaction/broadcast', function(req, res) {
