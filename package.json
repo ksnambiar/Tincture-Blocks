@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start":"nodemon api/networkNode.js",
+    "start": "nodemon api/networkNode.js",
     "node_1": "nodemon --watch dev -e js api/networkNode.js 3001 http://localhost:3001",
     "node_2": "nodemon --watch dev -e js api/networkNode.js 3002 http://localhost:3002",
     "node_3": "nodemon --watch dev -e js api/networkNode.js 3003 http://localhost:3003",

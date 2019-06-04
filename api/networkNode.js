@@ -6,8 +6,10 @@ const {tincture} = require("../inits/init");
 const {manager} = require("./stateHandler");
 const bodyParser = require("body-parser");
 const fs = require("fs");
+const {checkExistence,addChainData,reloadChainData} = require("../Blockchain/blockdata");
 let nodeAddress;
 const port1 = process.argv[2];
+// node address persistance
 fs.readFile(__dirname+"/node_address.json",(err,data)=>{
 	if(err){
 		nodeAddress = uuid().split('-').join('')
@@ -21,6 +23,25 @@ fs.readFile(__dirname+"/node_address.json",(err,data)=>{
 		console.log(`pid is --- ${nodeAddress}`);
 	}
 })
+
+//blockchain data persistance
+checkExistence().then(obj=>{
+	console.log("chain existing")
+	reloadChainData().then(obj=>{
+		console.log("chain reloaded");
+		console.log(obj)
+		tincture.chain=obj
+	}).catch(err=>{
+		console.log("2+",err)
+	})
+}).catch(err=>{
+	console.log("chain not existing")
+	addChainData(0,JSON.stringify(tincture.chain[0]))
+})
+
+//blockchain state persistance
+
+
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
