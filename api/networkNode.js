@@ -44,7 +44,12 @@ checkExistence().then(obj=>{
 stateExistence().then(obj=>{
 	reloadData().then(obj=>{
 		tinctureState.reloadState(obj)
+	}).catch(err=>{
+		console.log(err)
 	})
+}).catch(err=>{
+	console.log(err)
+	addStatePersistance(JSON.stringify(tinctureState.data.songs));
 })
 
 

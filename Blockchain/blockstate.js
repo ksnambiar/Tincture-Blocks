@@ -8,7 +8,7 @@ const addStatePersistance = (value)=>{
 }
 
 const reloadData = ()=>{
-    return Promise((resolve,reject)=>{
+    return new Promise((resolve,reject)=>{
         db.get('songs',function(err,value){
             if(err){
                 reject(err)
@@ -20,7 +20,7 @@ const reloadData = ()=>{
 }
 
 const stateExistence=()=>{
-    return Promise((resolve,reject)=>{
+    return new Promise((resolve,reject)=>{
         db.get('songs',function(err,value){
             if(err){
                 reject(false)
