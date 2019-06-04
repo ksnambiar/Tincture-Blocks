@@ -170,6 +170,8 @@ app.get('/mine', function(req, res) {
 		return rp(requestOptions);
 	})
 	.then(data => {
+		
+		addStatePersistance(JSON.stringify(tinctureState.data.songs));
 		res.json({
 			note: "New block mined & broadcast successfully",
 			block: newBlock

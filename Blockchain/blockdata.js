@@ -42,6 +42,30 @@ function getBlocksCount(){
 });
 }
 
+function addPersistanceInBetween(chain){
+    i=0;
+    db.createReadStream().on('data',function(data){
+        console.log(data.value)
+        ++i;
+    })
+    .on('error',function(err){
+        console.log(err)
+    })
+    .on('close',function(){
+       chain.forEach((obj,k)=>{
+           if(k>=i){
+               db.put(k,JSON.stringify(obj),(err)=>{
+                   if(err){
+                       console.log("some error while writing in between");
+                   }else{
+                       console.log("data written")
+                   }
+               })
+           }
+       })
+    })
+}
+
 function reloadChainData(){
     return new Promise((resolve,reject)=>{
         let i=0;
