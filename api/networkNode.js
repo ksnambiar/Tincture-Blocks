@@ -6,53 +6,55 @@ const {tincture,tinctureState} = require("../inits/init");
 const {manager} = require("./stateHandler");
 const bodyParser = require("body-parser");
 const fs = require("fs");
-const {checkExistence,addChainData,reloadChainData,addPersistanceInBetween} = require("../Blockchain/blockdata");
-const {addStatePersistance,reloadData,stateExistence} = require("../Blockchain/blockstate");
-let nodeAddress;
-const port1 = process.env.PORT||3001;
+const cors = require("cors");
+// const {checkExistence,addChainData,reloadChainData,addPersistanceInBetween} = require("../Blockchain/blockdata");
+// const {addStatePersistance,reloadData,stateExistence} = require("../Blockchain/blockstate");
+let nodeAddress=uuid().split('-').join('');
+// const port1 = process.env.PORT||3001;
+const port1 = process.argv[2]
 // node address persistance
-fs.readFile(__dirname+"/node_address.json",(err,data)=>{
-	if(err){
-		nodeAddress = uuid().split('-').join('')
-		console.log("no file found so creating it....")
-		fs.writeFileSync(__dirname+"/node_address.json",JSON.stringify({pubadd:nodeAddress}))
-		console.log(`pid -- ${nodeAddress}`);
-	}else{
-		let parserData = JSON.parse(data);
-		console.log("file already exists taking pid")
-		nodeAddress=parserData.pubadd
-		console.log(`pid is --- ${nodeAddress}`);
-	}
-})
+// fs.readFile(__dirname+"/node_address.json",(err,data)=>{
+// 	if(err){
+// 		nodeAddress = uuid().split('-').join('')
+// 		console.log("no file found so creating it....")
+// 		fs.writeFileSync(__dirname+"/node_address.json",JSON.stringify({pubadd:nodeAddress}))
+// 		console.log(`pid -- ${nodeAddress}`);
+// 	}else{
+// 		let parserData = JSON.parse(data);
+// 		console.log("file already exists taking pid")
+// 		nodeAddress=parserData.pubadd
+// 		console.log(`pid is --- ${nodeAddress}`);
+// 	}
+// })
 
 //blockchain data persistance
-checkExistence().then(obj=>{
-	console.log("chain existing")
-	reloadChainData().then(obj=>{
-		console.log("chain reloaded");
-		console.log(obj)
-		tincture.chain=obj
-	}).catch(err=>{
-		console.log("2+",err)
-	})
-}).catch(err=>{
-	console.log("chain not existing")
-	addChainData(0,JSON.stringify(tincture.chain[0]))
-})
+// checkExistence().then(obj=>{
+// 	console.log("chain existing")
+// 	reloadChainData().then(obj=>{
+// 		console.log("chain reloaded");
+// 		console.log(obj)
+// 		tincture.chain=obj
+// 	}).catch(err=>{
+// 		console.log("2+",err)
+// 	})
+// }).catch(err=>{
+// 	console.log("chain not existing")
+// 	addChainData(0,JSON.stringify(tincture.chain[0]))
+// })
 
 //blockchain state persistance
-stateExistence().then(obj=>{
-	reloadData().then(obj=>{
-		tinctureState.reloadState(obj)
-	}).catch(err=>{
-		console.log(err)
-	})
-}).catch(err=>{
-	console.log(err)
-	addStatePersistance(JSON.stringify(tinctureState.data.songs));
-})
+// stateExistence().then(obj=>{
+// 	reloadData().then(obj=>{
+// 		tinctureState.reloadState(obj)
+// 	}).catch(err=>{
+// 		console.log(err)
+// 	})
+// }).catch(err=>{
+// 	console.log(err)
+// 	addStatePersistance(JSON.stringify(tinctureState.data.songs));
+// })
 
-
+app.use(cors())
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
@@ -68,6 +70,7 @@ app.post("/state",(req,res)=>{
 		res.status(200).json({data:result})
 	}
 })
+
 //////
 // endpoints start from here
 /////
@@ -134,6 +137,71 @@ app.post('/dataTransaction/broadcast', function(req, res) {
 		res.json({ note: 'Transaction created and broadcast successfully.' });
 	});
 });
+//proof of vote/authority(every node has equal power)
+app.get('/pod',(req,res)=>{
+	if(tincture.networkNodes.length===0){
+		const lastBlock = tincture.getLastBlock();
+	const previousBlockHash = lastBlock['hash'];
+	const currentBlockData = {
+		transactions: tincture.pendingTransactions,
+		index: lastBlock['index'] + 1
+	};
+	const blockHash = tincture.hashBlock(previousBlockHash, currentBlockData);
+	const newBlock = tincture.createNewBlock(previousBlockHash, blockHash);
+	tincture.chain.push
+	}
+
+	let chosenDelegate = tincture.networkNodes[Math.floor(Math.random()*tincture.networkNodes.length)]
+})
+
+app.post('/broadcast/vote',(req,res)=>{
+	let chosenDelegate=req.body;
+	tincture.networkNodes.forEach(networkNodeUrl => {
+		const requestOptions = {
+			uri: networkNodeUrl + '/voteAccept',
+			method: 'POST',
+			body: chosenDelegate,
+			json: true
+		};
+
+		requestPromises.push(rp(requestOptions));
+	});
+
+	Promise.all(requestPromises)
+	.then(data => {
+		res.json({ note: 'Transaction created and broadcast successfully.' });
+	});
+})
+/////
+//state sync routes
+
+app.get("/syncState",(req,res)=>{
+	let message = tinctureState.data;
+	const requestPromises = [];
+	tincture.networkNodes.forEach(networkNodeUrl => {
+		const requestOptions = {
+			uri: networkNodeUrl + '/recieveState',
+			method: 'POST',
+			body: message,
+			json: true
+		};
+
+		requestPromises.push(rp(requestOptions));
+	});
+
+	Promise.all(requestPromises)
+	.then(data => {
+		res.json({ note: 'state sync complete' });
+	});
+})
+
+app.post("/recieveState",(req,res)=>{
+	let newState=req.body;
+	tinctureState.data=newState;
+	res.status(200).json({note:"state recieved and updated successfully"});
+})
+
+//////
 
 // mine a block
 app.get('/mine', function(req, res) {
@@ -175,8 +243,8 @@ app.get('/mine', function(req, res) {
 	})
 	.then(data => {
 
-		addStatePersistance(JSON.stringify(tinctureState.data.songs));
-		addPersistanceInBetween(tincture.chain)
+		// addStatePersistance(JSON.stringify(tinctureState.data.songs));
+		// addPersistanceInBetween(tincture.chain)
 		res.json({
 			note: "New block mined & broadcast successfully",
 			block: newBlock
@@ -278,7 +346,7 @@ app.get('/consensus', function(req, res) {
 
 		requestPromises.push(rp(requestOptions));
 	});
-
+ 
 	Promise.all(requestPromises)
 	.then(blockchains => {
 		const currentChainLength =tincture.chain.length;
