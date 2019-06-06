@@ -146,12 +146,45 @@ app.get('/pod',(req,res)=>{
 		transactions: tincture.pendingTransactions,
 		index: lastBlock['index'] + 1
 	};
-	const blockHash = tincture.hashBlock(previousBlockHash, currentBlockData);
-	const newBlock = tincture.createNewBlock(previousBlockHash, blockHash);
-	tincture.chain.push
-	}
+	const blockHash = tincture.hashBlock(previousBlockHash, currentBlockData,0);
+	const newBlock = tincture.createNewBlock(0, blockHash,previousBlockHash);
+	// tincture.chain.push(newBlock)
+	res.status(200).json({data:newBlock,message:"block created successfully"})
+	}else{
 
-	let chosenDelegate = tincture.networkNodes[Math.floor(Math.random()*tincture.networkNodes.length)]
+		let chosenDelegate = tincture.networkNodes[Math.floor(Math.random()*tincture.networkNodes.length)]
+		requestPromises=[]
+		const requestOptions = {
+			uri: tincture.currentNodeUrl + '/broadcast/vote',
+			method: 'POST',
+			body: chosenDelegate,
+			json: true
+		};
+		requestPromises.push(rp(requestOptions))
+
+		Promise.all(requestPromises)
+		.then(obj=>{
+			max=tincture.chosenDelegates[Object.keys(tincture.chosenDelegates)[0]]
+			Object.keys(tincture.chosenDelegates).forEach(value=>{
+				if(tincture.chosenDelegates[value]>tincture.chosenDelegates[max]){
+					max=value
+				}
+			})
+			tincture.blockCreator=max;
+			if(tincture.blockCreator===tincture.currentNodeUrl){
+				const lastBlock = tincture.getLastBlock();
+	const previousBlockHash = lastBlock['hash'];
+	const currentBlockData = {
+		transactions: tincture.pendingTransactions,
+		index: lastBlock['index'] + 1
+	};
+	const blockHash = tincture.hashBlock(previousBlockHash, currentBlockData,0);
+	const newBlock = tincture.createNewBlock(0, blockHash,previousBlockHash);
+	// tincture.chain.push(newBlock)
+	res.status(200).json({data:newBlock,message:"block created successfully"})
+			}
+		})
+	}
 })
 
 app.post('/broadcast/vote',(req,res)=>{
@@ -163,7 +196,6 @@ app.post('/broadcast/vote',(req,res)=>{
 			body: chosenDelegate,
 			json: true
 		};
-
 		requestPromises.push(rp(requestOptions));
 	});
 
@@ -172,6 +204,18 @@ app.post('/broadcast/vote',(req,res)=>{
 		res.json({ note: 'Transaction created and broadcast successfully.' });
 	});
 })
+
+app.post("/voteAccept",(req,res)=>{
+	let delegate=req.body;
+	if(Object.keys(tincture.chosenDelegates).includes(delegate)){
+		tincture.chosenDelegates[delegate]+=1;
+	}else{
+		tincture.chosenDelegates[delegate]=1;
+	}
+	res.status(200).json({note:"vote accepted"});
+})
+
+
 /////
 //state sync routes
 
@@ -185,7 +229,7 @@ app.get("/syncState",(req,res)=>{
 			body: message,
 			json: true
 		};
-
+ 
 		requestPromises.push(rp(requestOptions));
 	});
 
