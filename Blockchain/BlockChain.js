@@ -1,6 +1,6 @@
 const sha256 = require('sha256');
 const uuid = require('uuid/v1');
-const bootstrapNode="https://tincture.herokuapp.com"
+const bootstrapNode="http://localhost:3001"  //"https://tincture.herokuapp.com"
 const currentNodeUrl=process.argv[3];
 class BlockChain {
   constructor(){
@@ -8,6 +8,7 @@ class BlockChain {
 	this.pendingTransactions = [];
 	this.chosenDelegates={}
 	this.blockCreator=null
+	this.bootstrapNode=bootstrapNode
 	this.currentNodeUrl = currentNodeUrl;
 	this.networkNodes = [];
 

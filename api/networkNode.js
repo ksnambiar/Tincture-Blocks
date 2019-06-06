@@ -540,12 +540,27 @@ app.get('/transaction/:transactionId', function(req, res) {
 		block: trasactionData.block
 	});
 });
-
+app.get("/networkNodes",(req,res)=>{
+	res.status(200).json({data:tincture.networkNodes});
+})
 
 
 
 
 // let port1 = process.env.PORT|3000
 app.listen(port1,()=>{
-  console.log(`listening on ${port1}`);
+	console.log(`listening on ${port1}`);
+
+	const requestOptions = {
+		uri: tincture.bootstrapNode + '/register-and-broadcast-node',
+		method: 'POST',
+		body: { newNodeUrl: tincture.currentNodeUrl },
+		json: true
+	};
+	rp(requestOptions).then(obj=>{
+		console.log("connected to the network");
+	})
+	.catch(err=>{
+	console.log("connection error");
+	})
 })
