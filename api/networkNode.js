@@ -64,11 +64,43 @@ app.get("/",(req,res)=>{
 
 app.post("/state",(req,res)=>{
 	let result=manager(req.body)
-	if(result===0){
-		res.status(400).json({message:"some error"});
-	}else{
-		res.status(200).json({data:result})
-	}
+	let payload=req.body.payload
+	let transaction=tincture.createNewDataTranasction(payload.userName,payload)
+    transaction.type=req.body.type
+	tincture.addTransactionToPendingTransactions(transaction)
+	const requestPromises = [];
+	tincture.networkNodes.forEach(networkNodeUrl => {
+		const requestOptions = {
+			uri: networkNodeUrl + '/dataTransaction',
+			method: 'POST',
+			body: transaction,
+			json: true
+		};
+
+		requestPromises.push(rp(requestOptions));
+	});
+
+	Promise.all(requestPromises)
+	.then(obj=>{
+		const requestOptions = {
+			uri: tincture.currentNodeUrl + '/syncState',
+			method: 'GET'
+		};
+		rp(requestOptions).then(obj1=>{
+			if(result===0){
+				res.status(400).json({message:"some error"});
+			}else{
+				res.status(200).json({data:result,note:"transaction broadcasted and casted"})
+			}
+		})
+		.catch(err=>{
+			res.status(400).json({err:err})
+		})
+	})
+	.catch(obj=>{
+		res.status(400).json({error:obj})
+	})
+	
 })
 
 //////
@@ -90,7 +122,8 @@ app.post('/valueTransaction', function(req, res) {
 //for data storage
 app.post('/dataTransaction',function(req,res){
   const newTransaction = req.body;
-  const blockIndex = tincture.addTransactionToPendingTransactions(newTransaction)
+  const blockIndex = tincture.addTransactionToPendingTransactions(newTransaction);
+  res.json({ note: `Transaction will be added in block ${blockIndex}.` });
 })
 
 //value transaction broadcast
@@ -431,8 +464,13 @@ app.post('/register-nodes-bulk', function(req, res) {
 
 	res.json({ note: 'Bulk registration successful.' });
 });
+////
+//node status
+app.get("/nodeStatus",(req,res)=>{
+	res.status(200).json({node:tincture.currentNodeUrl})
+})
 
-
+////
 // consensus
 app.get('/consensus', function(req, res) {
 	const requestPromises = [];

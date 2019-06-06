@@ -1,5 +1,6 @@
 const sha256 = require('sha256');
 const uuid = require('uuid/v1');
+const bootstrapNode="https://tincture.herokuapp.com"
 const currentNodeUrl=process.argv[3];
 class BlockChain {
   constructor(){
