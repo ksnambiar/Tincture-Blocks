@@ -306,7 +306,21 @@ app.post("/voteAccept",(req,res)=>{
 
 /////
 //state sync routes
-
+app.post("/syncStateSingle",(req,res)=>{
+	let networkNode = req.body.networkNode;
+	const requestOptions = {
+		uri: networkNode + '/recieveState',
+			method: 'POST',
+			body: tinctureState.data,
+			json: true
+	}
+	rp(requestOptions).then(res1=>{
+		res.json({note:"state send"});
+	})
+	.catch(err=>{
+		res.json({note:"state send error"})
+	})
+})
 app.get("/syncState",(req,res)=>{
 	let message = tinctureState.data;
 	const requestPromises = [];
@@ -559,6 +573,21 @@ app.listen(port1,()=>{
 	};
 	rp(requestOptions).then(obj=>{
 		console.log("connected to the network");
+		//syncing chain data
+		
+		//syncing chain state
+		const requestOptions1 = {
+			uri: tincture.bootstrapNode + '/syncStateSingle',
+			method: 'POST',
+			body:{networkNode:tincture.currentNodeUrl},
+			json:true
+		};
+		rp(requestOptions1).then(res1=>{
+			console.log("state synced");
+		})
+		.catch(err=>{
+			console.log("error",err)
+		})
 	})
 	.catch(err=>{
 	console.log("connection error");
