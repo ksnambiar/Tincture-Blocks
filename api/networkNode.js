@@ -574,7 +574,18 @@ app.listen(port1,()=>{
 	rp(requestOptions).then(obj=>{
 		console.log("connected to the network");
 		//syncing chain data
-		
+		const requestOptions2={
+			uri: tincture.bootstrapNode + '/blockchain',
+			method: 'GET'
+		}
+		rp(requestOptions2).then(data=>{
+			let blockchain=data.data;
+			tincture.chain=blockchain;
+			console.log("chain synced")
+		})
+		.catch(err=>{
+			console.log("chain error",err)
+		})
 		//syncing chain state
 		const requestOptions1 = {
 			uri: tincture.bootstrapNode + '/syncStateSingle',
