@@ -138,6 +138,30 @@ app.post('/dataTransaction/broadcast', function(req, res) {
 	});
 });
 //proof of vote/authority(every node has equal power)
+app.get('/initiatepod',(req,res)=>{
+	//for starting pod
+	tincture.blockCreator=null
+
+	let urls=tincture.networkNodes;
+	urls.push(tincture.currentNodeUrl);
+	let requestPromises=[]
+	urls.forEach(networkNodeUrl=>{
+		const requestOptions = {
+			uri: networkNodeUrl + '/pod',
+			method: 'GET'
+			// body: {delegate:chosenDelegate},
+			// json: true
+		};
+		requestPromises.push(rp(requestOptions));
+	})
+	Promise.all(requestPromises)
+	.then(data => {
+		console.log("0.1");
+		res.json({ note: 'pod done',data:data });
+	});	
+})
+
+
 app.get('/pod',(req,res)=>{
 	if(tincture.networkNodes.length===0){
 		const lastBlock = tincture.getLastBlock();
@@ -151,20 +175,20 @@ app.get('/pod',(req,res)=>{
 	// tincture.chain.push(newBlock)
 	res.status(200).json({data:newBlock,message:"block created successfully"})
 	}else{
-
+		console.log("starting")
 		let chosenDelegate = tincture.networkNodes[Math.floor(Math.random()*tincture.networkNodes.length)]
-		requestPromises=[]
 		const requestOptions = {
 			uri: tincture.currentNodeUrl + '/broadcast/vote',
 			method: 'POST',
-			body: chosenDelegate,
+			body: {delegate:chosenDelegate},
 			json: true
-		};
-		requestPromises.push(rp(requestOptions))
+		}; 
+		console.log("2") 
+		console.log("3")
 
-		Promise.all(requestPromises)
-		.then(obj=>{
-			max=tincture.chosenDelegates[Object.keys(tincture.chosenDelegates)[0]]
+		rp(requestOptions).then(obj=>{
+			console.log("4")
+			max=Object.keys(tincture.chosenDelegates)[0]
 			Object.keys(tincture.chosenDelegates).forEach(value=>{
 				if(tincture.chosenDelegates[value]>tincture.chosenDelegates[max]){
 					max=value
@@ -181,19 +205,48 @@ app.get('/pod',(req,res)=>{
 	const blockHash = tincture.hashBlock(previousBlockHash, currentBlockData,0);
 	const newBlock = tincture.createNewBlock(0, blockHash,previousBlockHash);
 	// tincture.chain.push(newBlock)
-	res.status(200).json({data:newBlock,message:"block created successfully"})
+	let requestPromises=[]
+	tincture.networkNodes.forEach(nodeUrl=>{
+		const requestOptions = {
+			uri: nodeUrl + '/receive-new-block',
+			method: 'POST',
+			body: {newBlock:newBlock},
+			json: true
+		};
+		requestPromises.push(rp(requestOptions));
+	})
+	Promise.all(requestPromises)
+	.then(obj=>{
+		res.status(200).json({data:newBlock,message:`block created successfully by ${tincture.currentNodeUrl}` })
+	})
+	.catch(err=>{
+		console.log(err.body)
+	})
+			}else{
+				res.status(200).json({message:`${tincture.currentNodeUrl} waiting for new block from ${tincture.blockCreator}`})
+
 			}
 		})
+		// Promise.all(requestPromises)
+		// .then(obj=>{
+			
+		// })
+		// .catch(err=>{
+		// 	console.log(err)  
+		// })
 	}
 })
 
 app.post('/broadcast/vote',(req,res)=>{
-	let chosenDelegate=req.body;
+	console.log(req.body)
+	let chosenDelegate=req.body.delegate;
+	let requestPromises=[]
 	tincture.networkNodes.forEach(networkNodeUrl => {
+		console.log("5")
 		const requestOptions = {
 			uri: networkNodeUrl + '/voteAccept',
 			method: 'POST',
-			body: chosenDelegate,
+			body: {delegate:chosenDelegate},
 			json: true
 		};
 		requestPromises.push(rp(requestOptions));
@@ -201,12 +254,14 @@ app.post('/broadcast/vote',(req,res)=>{
 
 	Promise.all(requestPromises)
 	.then(data => {
-		res.json({ note: 'Transaction created and broadcast successfully.' });
+		console.log("6")
+		res.json({ note: 'Vote created and broadcast successfully.' });
 	});
 })
 
 app.post("/voteAccept",(req,res)=>{
-	let delegate=req.body;
+	let delegate=req.body.delegate;
+	console.log("7")
 	if(Object.keys(tincture.chosenDelegates).includes(delegate)){
 		tincture.chosenDelegates[delegate]+=1;
 	}else{
