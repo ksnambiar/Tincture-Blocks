@@ -174,9 +174,9 @@ app.post('/dataTransaction/broadcast', function(req, res) {
 app.get('/initiatepod',(req,res)=>{
 	//for starting pod
 	tincture.blockCreator=null
-
+	console.log(tincture.networkNodes)
 	let urls=tincture.networkNodes;
-	urls.push(tincture.currentNodeUrl);
+	// urls.push(tincture.currentNodeUrl);
 	let requestPromises=[]
 	urls.forEach(networkNodeUrl=>{
 		const requestOptions = {
@@ -564,7 +564,7 @@ app.get("/networkNodes",(req,res)=>{
 // let port1 = process.env.PORT|3000
 app.listen(port1,()=>{
 	console.log(`listening on ${port1}`);
-
+	if(tincture.currentNodeUrl!==tincture.bootstrapNode){
 	const requestOptions = {
 		uri: tincture.bootstrapNode + '/register-and-broadcast-node',
 		method: 'POST',
@@ -574,33 +574,38 @@ app.listen(port1,()=>{
 	rp(requestOptions).then(obj=>{
 		console.log("connected to the network");
 		//syncing chain data
-		const requestOptions2={
-			uri: tincture.bootstrapNode + '/blockchain',
-			method: 'GET'
-		}
-		rp(requestOptions2).then(data=>{
-			let blockchain=data.data;
-			tincture.chain=blockchain;
-			console.log("chain synced")
-		})
-		.catch(err=>{
-			console.log("chain error",err)
-		})
-		//syncing chain state
-		const requestOptions1 = {
-			uri: tincture.bootstrapNode + '/syncStateSingle',
-			method: 'POST',
-			body:{networkNode:tincture.currentNodeUrl},
-			json:true
-		};
-		rp(requestOptions1).then(res1=>{
-			console.log("state synced");
-		})
-		.catch(err=>{
-			console.log("error",err)
-		})
+		
+			const requestOptions2={
+				uri: tincture.bootstrapNode + '/blockchain',
+				method: 'GET'
+			}
+			rp(requestOptions2).then(data=>{
+				let newData=JSON.parse(data)
+				let blockchain=newData.data;
+				tincture.chain=blockchain;
+				console.log("chain synced")
+			})
+			.catch(err=>{
+				console.log("chain error",err)
+			})
+			//syncing chain state
+			const requestOptions1 = {
+				uri: tincture.bootstrapNode + '/syncStateSingle',
+				method: 'POST',
+				body:{networkNode:tincture.currentNodeUrl},
+				json:true
+			};
+			rp(requestOptions1).then(res1=>{
+				console.log("state synced");
+			})
+			.catch(err=>{
+				console.log("error",err)
+			})
+		
+		
 	})
 	.catch(err=>{
 	console.log("connection error");
 	})
+}
 })

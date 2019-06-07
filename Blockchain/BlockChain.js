@@ -38,7 +38,7 @@ getLastBlock() {
 createNewValueTransaction(amount, sender, recipient) {
 	const newTransaction = {
 		amount: amount,
-		sender: sender,
+		sender: sender, 
 		recipient: recipient,
 		transactionId: uuid().split('-').join('')
 	};
