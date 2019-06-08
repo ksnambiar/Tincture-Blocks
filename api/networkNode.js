@@ -61,7 +61,25 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.get("/",(req,res)=>{
   res.status(200).json({message:"start interface"});
 })
+app.get("/state/songs",(req,res)=>{
+	res.status(200).json({data:tinctureState.data.songs});
+})
+app.get("/state/songs/:tid",(req,res)=>{
+	let result
+	tinctureState.forEach(obj=>{
+		if(obj.tid===req.params.tid){
+			result=obj
+		}
+	})
+	res.status(200).json({data:result})
+})
 
+app.post("/state/addSong",(req,res)=>{
+	let data=req.body;
+	tinctureData.data.songs.push(data)
+	res.status(200).json({message:"added successfully"})
+})
+ 
 app.post("/state",(req,res)=>{
 	let result=manager(req.body)
 	let payload=req.body.payload
@@ -106,7 +124,10 @@ app.post("/state",(req,res)=>{
 //////
 // endpoints start from here
 /////
-
+app.post("/testchain",(req,res)=>{
+	console.log(req.body);
+	res.status(200).json({message:"data recieved"})
+})
 
 app.get("/blockchain",(req,res)=>{
   res.status(200).json({data:tincture.chain})
@@ -187,10 +208,21 @@ app.get('/initiatepod',(req,res)=>{
 		};
 		requestPromises.push(rp(requestOptions));
 	})
+	const request2={
+			uri: tincture.currentNodeUrl + '/pod',
+			method: 'GET'
+		};
+	requestPromises.push(rp(request2))
+
 	Promise.all(requestPromises)
 	.then(data => {
 		console.log("0.1");
-		res.json({ note: 'pod done',data:data });
+		console.log(data)
+		let compres=[]
+		data.forEach(obj1=>{
+			compres.push(JSON.parse(obj1))
+		})
+		res.status(200).json({ note: 'pod done',data:compres });
 	});	
 })
 
@@ -252,7 +284,7 @@ app.get('/pod',(req,res)=>{
 	.then(obj=>{
 		res.status(200).json({data:newBlock,message:`block created successfully by ${tincture.currentNodeUrl}` })
 	})
-	.catch(err=>{
+	.catch(err=>{ 
 		console.log(err.body)
 	})
 			}else{
