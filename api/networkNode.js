@@ -10,8 +10,8 @@ const cors = require("cors");
 // const {checkExistence,addChainData,reloadChainData,addPersistanceInBetween} = require("../Blockchain/blockdata");
 // const {addStatePersistance,reloadData,stateExistence} = require("../Blockchain/blockstate");
 let nodeAddress=uuid().split('-').join('');
-// const port1 = process.env.PORT||3001;
-const port1 = process.argv[2]
+const port1 = process.env.PORT||3001;
+// const port1 = process.argv[2]
 // node address persistance
 // fs.readFile(__dirname+"/node_address.json",(err,data)=>{
 // 	if(err){
