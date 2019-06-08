@@ -64,6 +64,14 @@ app.get("/",(req,res)=>{
 app.get("/state/songs",(req,res)=>{
 	res.status(200).json({data:tinctureState.data.songs});
 })
+app.get("/state/trending",(req,res)=>{
+	res.status(200).json({data:tinctureState.data.trending});
+})
+
+app.get("/state/mt",(req,res)=>{
+	res.status(200).json({data:tinctureState.data.mt});
+})
+
 app.get("/state/songs/:tid",(req,res)=>{
 	let result
 	tinctureState.forEach(obj=>{
@@ -124,6 +132,7 @@ app.post("/state",(req,res)=>{
 //////
 // endpoints start from here
 /////
+
 app.post("/testchain",(req,res)=>{
 	console.log(req.body);
 	res.status(200).json({message:"data recieved"})

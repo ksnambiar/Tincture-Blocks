@@ -3,7 +3,9 @@ const {tincture} = require("../inits/init");
 class state{
   constructor(){
     this.data={
-      songs:[]
+      songs:[],
+      trending:[],
+      mt:[]
     }
   }
   addSong(songData){
