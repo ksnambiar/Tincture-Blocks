@@ -72,6 +72,17 @@ app.get("/state/mt",(req,res)=>{
 	res.status(200).json({data:tinctureState.data.mt});
 })
 
+app.get("/state/songs/:name",(req,res)=>{
+	let name=req.params.name;
+	let result
+	tinctureState.data.songs.forEach(obj=>{
+		if(obj.name===name){
+			result=obj;
+		}
+	})
+	res.status(200).json({data:result});
+})
+
 app.get("/state/songs/:tid",(req,res)=>{
 	let result
 	tinctureState.forEach(obj=>{
