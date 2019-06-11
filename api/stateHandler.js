@@ -10,6 +10,12 @@ const manager = (message)=>{
         case 'addSong':
             tinctureState.addSong(payload)
             return "done"
+        case 'addTrending':
+            tinctureState.addToTrending(payload)
+            return "done"
+        case 'addMt':
+            tinctureState.addToMt(payload)
+            return "done"
         case 'getSongs':
             return tinctureState.getSongs()
         default:

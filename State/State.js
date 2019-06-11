@@ -8,6 +8,12 @@ class state{
       mt:[]
     }
   }
+  addToTrending(data){
+    this.data.trending.push(data)
+  }
+  addToMt(data){
+    this.data.mt.push(data)
+  }
   addSong(songData){
     this.data.songs.push(songData)
   }
