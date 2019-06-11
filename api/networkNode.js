@@ -7,7 +7,7 @@ const {manager} = require("./stateHandler");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const cors = require("cors");
-// const {checkExistence,addChainData,reloadChainData,addPersistanceInBetween} = require("../Blockchain/blockdata");
+// const {checkExistence,addChainData,reloadChainData,addPersistanceInBetween,addDataToChain} = require("../Blockchain/blockdata");
 // const {addStatePersistance,reloadData,stateExistence} = require("../Blockchain/blockstate");
 let nodeAddress=uuid().split('-').join('');
 const port1 = process.env.PORT||3001;
@@ -27,7 +27,7 @@ const port1 = process.env.PORT||3001;
 // 	}
 // })
 
-//blockchain data persistance
+// blockchain data persistance
 // checkExistence().then(obj=>{
 // 	console.log("chain existing")
 // 	reloadChainData().then(obj=>{
@@ -42,7 +42,7 @@ const port1 = process.env.PORT||3001;
 // 	addChainData(0,JSON.stringify(tincture.chain[0]))
 // })
 
-//blockchain state persistance
+// blockchain state persistance
 // stateExistence().then(obj=>{
 // 	reloadData().then(obj=>{
 // 		tinctureState.reloadState(obj)
@@ -307,10 +307,10 @@ app.get('/pod',(req,res)=>{
 	.catch(err=>{ 
 		console.log(err.body)
 	})
-			}else{
+	}else{
 				res.status(200).json({message:`${tincture.currentNodeUrl} waiting for new block from ${tincture.blockCreator}`})
 
-			}
+		}
 		})
 		// Promise.all(requestPromises)
 		// .then(obj=>{
@@ -464,6 +464,7 @@ app.post('/receive-new-block', function(req, res) {
 	if (correctHash && correctIndex) {
 		tincture.chain.push(newBlock);
 		tincture.pendingTransactions = [];
+		// addDataToChain(JSON.stringify(newBlock))
 		res.json({
 			note: 'New block received and accepted.',
 			newBlock: newBlock
@@ -649,6 +650,7 @@ app.listen(port1,()=>{
 			};
 			rp(requestOptions1).then(res1=>{
 				console.log("state synced");
+
 			})
 			.catch(err=>{
 				console.log("error",err)
@@ -659,5 +661,18 @@ app.listen(port1,()=>{
 	.catch(err=>{
 	console.log("connection error");
 	})
+}else{
+	setInterval(()=>{
+		const relop={
+			uri: tincture.bootstrapNode + '/initiatepod',
+			method: 'GET'
+		}
+		rp(relop).then(obj=>{
+			
+		})
+		.catch(err=>{
+			console.log(err)
+		})
+	},10000)
 }
 })
