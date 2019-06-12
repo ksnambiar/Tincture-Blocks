@@ -662,17 +662,17 @@ app.listen(port1,()=>{
 	console.log("connection error");
 	})
 }else{
-	setInterval(()=>{
-		const relop={
-			uri: tincture.bootstrapNode + '/initiatepod',
-			method: 'GET'
-		}
-		rp(relop).then(obj=>{
+	// setInterval(()=>{
+	// 	const relop={
+	// 		uri: tincture.bootstrapNode + '/initiatepod',
+	// 		method: 'GET'
+	// 	}
+	// 	rp(relop).then(obj=>{
 			
-		})
-		.catch(err=>{
-			console.log(err)
-		})
-	},10000)
+	// 	})
+	// 	.catch(err=>{
+	// 		console.log(err)
+	// 	})
+	// },10000)
 }
 })
