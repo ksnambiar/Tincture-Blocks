@@ -1,9 +1,9 @@
 const sha256 = require('sha256');
 const uuid = require('uuid/v1');
-const bootstrapNode="http://localhost:3001";  //"http://localhost:3001" https://tincture.herokuapp.com
+const bootstrapNode="https://tincture.herokuapp.com";  //"http://localhost:3001" https://tincture.herokuapp.com
 
 // put the url names of ur heroku app over here
-const currentNodeUrl="http://localhost:3001";  //process.argv[3]
+const currentNodeUrl="https://tincture.herokuapp.com";  //process.argv[3]
 
 
 // const currentNodeUrl=process.argv[3];
