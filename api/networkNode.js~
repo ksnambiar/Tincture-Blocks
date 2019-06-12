@@ -214,6 +214,7 @@ app.post('/dataTransaction/broadcast', function(req, res) {
 //proof of vote/authority(every node has equal power)
 app.get('/initiatepod',(req,res)=>{
 	//for starting pod
+	tincture.blockCreator=null
 	console.log(tincture.networkNodes)
 	let urls=tincture.networkNodes;
 	// urls.push(tincture.currentNodeUrl);
@@ -247,8 +248,6 @@ app.get('/initiatepod',(req,res)=>{
 
 
 app.get('/pod',(req,res)=>{
-	tincture.blockCreator=null
-	tincture.chosenDelegates={}
 	if(tincture.networkNodes.length===0){
 		const lastBlock = tincture.getLastBlock();
 	const previousBlockHash = lastBlock['hash'];
